@@ -1,18 +1,16 @@
 package org.easypr.core;
 
+import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_core.MatVector;
+
 import static org.bytedeco.javacpp.opencv_core.merge;
 import static org.bytedeco.javacpp.opencv_core.split;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.easypr.core.CoreFunc.features;
 
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.MatVector;
-
 /**
- * 
  * @author Created by fanwenjie
  * @author lin.yao
- *
  */
 public class Features implements SVMCallback {
 

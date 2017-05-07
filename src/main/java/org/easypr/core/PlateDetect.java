@@ -1,28 +1,26 @@
 package org.easypr.core;
 
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
+import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.util.Vector;
 
-import org.bytedeco.javacpp.opencv_core.Mat;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 /**
  * @author Created by fanwenjie
  * @author lin.yao
- * 
  */
 public class PlateDetect {
 
     /**
      * @param src
-     * @param resultVec
-     *            可能是车牌的图块集合
+     * @param resultVec 可能是车牌的图块集合
      * @return the error number
-     *         <ul>
-     *         <li>0: plate detected successfully;
-     *         <li>-1: source Mat is empty;
-     *         <li>-2: plate not detected.
-     *         </ul>
+     * <ul>
+     * <li>0: plate detected successfully;
+     * <li>-1: source Mat is empty;
+     * <li>-2: plate not detected.
+     * </ul>
      */
     public int plateDetect(final Mat src, Vector<Mat> resultVec) {
         Vector<Mat> matVec = plateLocate.plateLocate(src);
@@ -49,7 +47,7 @@ public class PlateDetect {
 
     /**
      * 生活模式与工业模式切换
-     * 
+     *
      * @param pdLifemode
      */
     public void setPDLifemode(boolean pdLifemode) {
@@ -58,7 +56,7 @@ public class PlateDetect {
 
     /**
      * 是否开启调试模式
-     * 
+     *
      * @param pdDebug
      */
     public void setPDDebug(boolean pdDebug) {
@@ -67,7 +65,7 @@ public class PlateDetect {
 
     /**
      * 获取调试模式状态
-     * 
+     *
      * @return
      */
     public boolean getPDDebug() {

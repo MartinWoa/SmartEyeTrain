@@ -1,6 +1,6 @@
 package org.easypr.core;
 
-import org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.util.Vector;
 
@@ -8,7 +8,6 @@ import java.util.Vector;
 /**
  * @author Created by fanwenjie
  * @author lin.yao
- *
  */
 public class PlateRecognize {
 
@@ -33,6 +32,7 @@ public class PlateRecognize {
 
     /**
      * 设置是否开启生活模式
+     *
      * @param lifemode
      */
     public void setLifemode(boolean lifemode) {
@@ -41,6 +41,7 @@ public class PlateRecognize {
 
     /**
      * 是否开启调试模式
+     *
      * @param debug
      */
     public void setDebug(boolean debug) {

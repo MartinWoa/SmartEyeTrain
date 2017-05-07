@@ -1,28 +1,23 @@
 package org.easypr.core;
 
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.indexer.FloatIndexer;
+import org.bytedeco.javacpp.opencv_core.*;
+
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.cvShowImage;
 import static org.bytedeco.javacpp.opencv_highgui.cvWaitKey;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2HSV;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
-
-import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.MatVector;
-import org.bytedeco.javacpp.opencv_core.Size;
-import org.bytedeco.javacpp.indexer.FloatIndexer;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 /**
  * @author lin.yao
- * 
  */
 public class CoreFunc {
     public enum Color {
         UNKNOWN, BLUE, YELLOW
-    };
+    }
+
+    ;
 
     public enum Direction {
         UNKNOWN, VERTICAL, HORIZONTAL
@@ -30,17 +25,14 @@ public class CoreFunc {
 
     /**
      * 根据一幅图像与颜色模板获取对应的二值图
-     * 
-     * @param src
-     *            输入RGB图像
-     * @param r
-     *            颜色模板（蓝色、黄色）
-     * @param adaptive_minsv
-     *            S和V的最小值由adaptive_minsv这个bool值判断
-     *            <ul>
-     *            <li>如果为true，则最小值取决于H值，按比例衰减
-     *            <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
-     *            </ul>
+     *
+     * @param src            输入RGB图像
+     * @param r              颜色模板（蓝色、黄色）
+     * @param adaptive_minsv S和V的最小值由adaptive_minsv这个bool值判断
+     *                       <ul>
+     *                       <li>如果为true，则最小值取决于H值，按比例衰减
+     *                       <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
+     *                       </ul>
      * @return 输出灰度图（只有0和255两个值，255代表匹配，0代表不匹配）
      */
     public static Mat colorMatch(final Mat src, final Color r, final boolean adaptive_minsv) {
@@ -68,16 +60,16 @@ public class CoreFunc {
         int min_h = 0;
         int max_h = 0;
         switch (r) {
-        case BLUE:
-            min_h = min_blue;
-            max_h = max_blue;
-            break;
-        case YELLOW:
-            min_h = min_yellow;
-            max_h = max_yellow;
-            break;
-        default:
-            break;
+            case BLUE:
+                min_h = min_blue;
+                max_h = max_blue;
+                break;
+            case YELLOW:
+                min_h = min_yellow;
+                max_h = max_yellow;
+                break;
+            default:
+                break;
         }
 
         float diff_h = (float) ((max_h - min_h) / 2);
@@ -144,17 +136,14 @@ public class CoreFunc {
 
     /**
      * 判断一个车牌的颜色
-     * 
-     * @param src
-     *            车牌mat
-     * @param r
-     *            颜色模板
-     * @param adaptive_minsv
-     *            S和V的最小值由adaptive_minsv这个bool值判断
-     *            <ul>
-     *            <li>如果为true，则最小值取决于H值，按比例衰减
-     *            <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
-     *            </ul>
+     *
+     * @param src            车牌mat
+     * @param r              颜色模板
+     * @param adaptive_minsv S和V的最小值由adaptive_minsv这个bool值判断
+     *                       <ul>
+     *                       <li>如果为true，则最小值取决于H值，按比例衰减
+     *                       <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
+     *                       </ul>
      * @return
      */
     public static boolean plateColorJudge(final Mat src, final Color color, final boolean adaptive_minsv) {
@@ -170,14 +159,13 @@ public class CoreFunc {
 
     /**
      * getPlateType 判断车牌的类型
-     * 
+     *
      * @param src
-     * @param adaptive_minsv
-     *            S和V的最小值由adaptive_minsv这个bool值判断
-     *            <ul>
-     *            <li>如果为true，则最小值取决于H值，按比例衰减
-     *            <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
-     *            </ul>
+     * @param adaptive_minsv S和V的最小值由adaptive_minsv这个bool值判断
+     *                       <ul>
+     *                       <li>如果为true，则最小值取决于H值，按比例衰减
+     *                       <li>如果为false，则不再自适应，使用固定的最小值minabs_sv
+     *                       </ul>
      * @return
      */
     public static Color getPlateType(final Mat src, final boolean adaptive_minsv) {
@@ -192,7 +180,7 @@ public class CoreFunc {
 
     /**
      * 获取垂直或水平方向直方图
-     * 
+     *
      * @param img
      * @param direction
      * @return
@@ -200,16 +188,16 @@ public class CoreFunc {
     public static float[] projectedHistogram(final Mat img, Direction direction) {
         int sz = 0;
         switch (direction) {
-        case HORIZONTAL:
-            sz = img.rows();
-            break;
+            case HORIZONTAL:
+                sz = img.rows();
+                break;
 
-        case VERTICAL:
-            sz = img.cols();
-            break;
+            case VERTICAL:
+                sz = img.cols();
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
 
         // 统计这一行或一列中，非零元素的个数，并保存到nonZeroMat中
@@ -240,10 +228,9 @@ public class CoreFunc {
      * Assign values to feature
      * <p>
      * 样本特征为水平、垂直直方图和低分辨率图像所组成的矢量
-     * 
+     *
      * @param in
-     * @param sizeData
-     *            低分辨率图像size = sizeData*sizeData, 可以为0
+     * @param sizeData 低分辨率图像size = sizeData*sizeData, 可以为0
      * @return
      */
     public static Mat features(final Mat in, final int sizeData) {
@@ -279,7 +266,7 @@ public class CoreFunc {
 
     /**
      * Show image
-     * 
+     *
      * @param title
      * @param src
      */

@@ -7,9 +7,8 @@ import org.bytedeco.javacpp.BytePointer;
  * 1. [float|double|int|long] to[Float|Double|Int|Long](BytePointer pointer)
  * 2. byte[] getBytes([float|double|int|long] value)
  * 3. [float|double|int|long] to[Float|Double|Int|Long](byte[] value)
- * 
+ *
  * @author lin.yao
- * 
  */
 public class Convert {
 
@@ -38,7 +37,7 @@ public class Convert {
     }
 
     public static byte[] getBytes(float value) {
-    	
+
         return getBytes(Float.floatToIntBits(value));
     }
 
@@ -50,8 +49,9 @@ public class Convert {
         final int length = 4;
         byte[] buffer = new byte[length];
 
-        for (int i = 0; i < length; ++i)
-        {  buffer[i] = (byte) ((value >> (i * 8)) & 0xFF);}     //TODO 是否因为对二进制的位运算出错？
+        for (int i = 0; i < length; ++i) {
+            buffer[i] = (byte) ((value >> (i * 8)) & 0xFF);
+        }     //TODO 是否因为对二进制的位运算出错？
         return buffer;
     }
 
