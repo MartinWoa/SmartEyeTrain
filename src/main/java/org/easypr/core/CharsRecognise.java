@@ -1,12 +1,13 @@
 package org.easypr.core;
 
+import java.util.Vector;
+
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.easypr.core.CoreFunc.Color;
 
-import java.util.Vector;
-
 /**
  * @author lin.yao
+ * 
  */
 public class CharsRecognise {
 
@@ -16,8 +17,9 @@ public class CharsRecognise {
 
     /**
      * Chars segment and identify 字符分割与识别
-     *
-     * @param plate the input plate
+     * 
+     * @param plate
+     *            the input plate
      * @return the result of plate recognition
      */
     public String charsRecognise(final Mat plate) {
@@ -42,7 +44,7 @@ public class CharsRecognise {
 
     /**
      * 是否开启调试模式
-     *
+     * 
      * @param isDebug
      */
     public void setCRDebug(final boolean isDebug) {
@@ -51,7 +53,7 @@ public class CharsRecognise {
 
     /**
      * 获取调试模式状态
-     *
+     * 
      * @return
      */
     public boolean getCRDebug() {
@@ -60,7 +62,7 @@ public class CharsRecognise {
 
     /**
      * 获得车牌颜色
-     *
+     * 
      * @param input
      * @return
      */
@@ -76,7 +78,7 @@ public class CharsRecognise {
 
     /**
      * 设置柳丁大小变量
-     *
+     * 
      * @param param
      */
     public void setLiuDingSize(final int param) {
@@ -85,7 +87,7 @@ public class CharsRecognise {
 
     /**
      * 设置颜色阈值
-     *
+     * 
      * @param param
      */
     public void setColorThreshold(final int param) {
@@ -94,7 +96,7 @@ public class CharsRecognise {
 
     /**
      * 设置蓝色百分比
-     *
+     * 
      * @param param
      */
     public void setBluePercent(final float param) {
@@ -103,7 +105,7 @@ public class CharsRecognise {
 
     /**
      * 得到蓝色百分比
-     *
+     * 
      * @param param
      */
     public final float getBluePercent() {
@@ -112,7 +114,7 @@ public class CharsRecognise {
 
     /**
      * 设置白色百分比
-     *
+     * 
      * @param param
      */
     public void setWhitePercent(final float param) {
@@ -121,7 +123,7 @@ public class CharsRecognise {
 
     /**
      * 得到白色百分比
-     *
+     * 
      * @param param
      */
     public final float getWhitePercent() {

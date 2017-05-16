@@ -1,29 +1,47 @@
 package org.easypr.core;
 
-import org.bytedeco.javacpp.opencv_core.*;
-import org.easypr.util.Convert;
+import static org.bytedeco.javacpp.opencv_core.CV_32F;
+import static org.bytedeco.javacpp.opencv_core.countNonZero;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 
+import static org.bytedeco.javacpp.opencv_imgproc.CV_CHAIN_APPROX_NONE;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_RETR_EXTERNAL;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_RGB2GRAY;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_BINARY;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_BINARY_INV;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_OTSU;
+import static org.bytedeco.javacpp.opencv_imgproc.INTER_LINEAR;
+import static org.bytedeco.javacpp.opencv_imgproc.boundingRect;
+import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
+import static org.bytedeco.javacpp.opencv_imgproc.findContours;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
+import static org.bytedeco.javacpp.opencv_imgproc.threshold;
+import static org.bytedeco.javacpp.opencv_imgproc.warpAffine;
+import static org.easypr.core.CoreFunc.getPlateType;
 import java.util.Vector;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.easypr.core.CoreFunc.getPlateType;
+import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_core.MatVector;
+import org.bytedeco.javacpp.opencv_core.Rect;
+import org.bytedeco.javacpp.opencv_core.Scalar;
+import org.bytedeco.javacpp.opencv_core.Size;
+import org.easypr.util.Convert;
 
 /**
  * @author lin.yao
+ * 
  */
 public class CharsSegment {
 
     /**
      * 字符分割
-     *
+     * 
      * @param input
      * @param resultVec
      * @return <ul>
-     * <li>more than zero: the number of chars;
-     * <li>-3: null;
-     * </ul>
+     *         <li>more than zero: the number of chars;
+     *         <li>-3: null;
+     *         </ul>
      */
     public int charsSegment(final Mat input, Vector<Mat> resultVec) {
         if (input.data().isNull())
@@ -41,16 +59,16 @@ public class CharsSegment {
         Mat tmpMat = new Mat(input, new Rect((int) (w * 0.1), (int) (h * 0.1), (int) (w * 0.8), (int) (h * 0.8)));
 
         switch (getPlateType(tmpMat, true)) {
-            case BLUE:
-                threshold(input_grey, img_threshold, 10, 255, CV_THRESH_OTSU + CV_THRESH_BINARY);
-                break;
+        case BLUE:
+            threshold(input_grey, img_threshold, 10, 255, CV_THRESH_OTSU + CV_THRESH_BINARY);
+            break;
 
-            case YELLOW:
-                threshold(input_grey, img_threshold, 10, 255, CV_THRESH_OTSU + CV_THRESH_BINARY_INV);
-                break;
+        case YELLOW:
+            threshold(input_grey, img_threshold, 10, 255, CV_THRESH_OTSU + CV_THRESH_BINARY_INV);
+            break;
 
-            default:
-                return -3;
+        default:
+            return -3;
         }
 
         if (this.isDebug) {
@@ -145,7 +163,7 @@ public class CharsSegment {
 
     /**
      * 字符尺寸验证
-     *
+     * 
      * @param r
      * @return
      */
@@ -171,7 +189,7 @@ public class CharsSegment {
 
     /**
      * 字符预处理: 统一每个字符的大小
-     *
+     * 
      * @param in
      * @return
      */
@@ -185,7 +203,7 @@ public class CharsSegment {
         transformMat.ptr(1, 2).put(Convert.getBytes((m - h) / 2f));
 
         Mat warpImage = new Mat(m, m, in.type());
-        warpAffine(in, warpImage, transformMat, warpImage.size(), INTER_LINEAR, BORDER_CONSTANT, new Scalar(0));
+        warpAffine(in, warpImage, transformMat, warpImage.size(), INTER_LINEAR, 0, new Scalar(0)); //import static org.bytedeco.javacpp.opencv_imgproc.BORDER_CONSTANT;
 
         Mat out = new Mat();
         resize(warpImage, out, new Size(charSize, charSize));
@@ -197,7 +215,7 @@ public class CharsSegment {
      * 去除车牌上方的钮钉
      * <p>
      * 计算每行元素的阶跃数，如果小于X认为是柳丁，将此行全部填0（涂黑）， X可根据实际调整
-     *
+     * 
      * @param img
      * @return
      */
@@ -225,7 +243,7 @@ public class CharsSegment {
 
     /**
      * 根据特殊车牌来构造猜测中文字符的位置和大小
-     *
+     * 
      * @param rectSpe
      * @return
      */
@@ -243,7 +261,7 @@ public class CharsSegment {
 
     /**
      * 找出指示城市的字符的Rect，例如苏A7003X，就是A的位置
-     *
+     * 
      * @param vecRect
      * @return
      */
@@ -283,7 +301,7 @@ public class CharsSegment {
      * <li>把特殊字符Rect左边的全部Rect去掉，后面再重建中文字符的位置;
      * <li>从特殊字符Rect开始，依次选择6个Rect，多余的舍去。
      * <ul>
-     *
+     * 
      * @param vecRect
      * @param outRect
      * @param specIndex
@@ -307,7 +325,7 @@ public class CharsSegment {
 
     /**
      * 将Rect按位置从左到右进行排序
-     *
+     * 
      * @param vecRect
      * @param out
      * @return

@@ -1,18 +1,19 @@
 package org.easypr.core;
 
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
+
+import java.util.Vector;
+
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.Rect;
 import org.bytedeco.javacpp.opencv_core.Size;
 import org.bytedeco.javacpp.opencv_ml.CvSVM;
 
-import java.util.Vector;
-
-import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
-
 /**
  * @author Created by fanwenjie
  * @author lin.yao
+ *
  */
 public class PlateJudge {
 
@@ -28,27 +29,27 @@ public class PlateJudge {
         svm.clear();
         svm.load(s, "svm");
     }
-
+    
     /**
      * 对单幅图像进行SVM判断
-     *
+     * 
      * @param inMat
      * @return
      */
     public int plateJudge(final Mat inMat) {
         Mat features = this.features.getHistogramFeatures(inMat);
-
+        
         // 通过直方图均衡化后的彩色图进行预测
         Mat p = features.reshape(1, 1);
         p.convertTo(p, CV_32FC1);
         float ret = svm.predict(features);
-
+       
         return (int) ret;
     }
 
     /**
      * 对多幅图像进行SVM判断
-     *
+     * 
      * @param inVec
      * @param resultVec
      * @return

@@ -1,17 +1,29 @@
 package org.easypr.train;
 
-import org.bytedeco.javacpp.opencv_core.*;
-import org.bytedeco.javacpp.opencv_ml.CvANN_MLP;
-import org.easypr.core.CoreFunc.Direction;
-import org.easypr.util.Convert;
-import org.easypr.util.Util;
+import static org.bytedeco.javacpp.opencv_core.CV_32F;
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
+import static org.bytedeco.javacpp.opencv_core.CV_STORAGE_WRITE;
+import static org.bytedeco.javacpp.opencv_core.getTickCount;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
+import static org.easypr.core.CoreFunc.projectedHistogram;
+import static org.easypr.core.CoreFunc.showImage;
 
 import java.util.Vector;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_highgui.imread;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
-import static org.easypr.core.CoreFunc.projectedHistogram;
+import org.bytedeco.javacpp.opencv_core.CvFileStorage;
+import org.bytedeco.javacpp.opencv_core.CvMemStorage;
+import org.bytedeco.javacpp.opencv_core.FileStorage;
+import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_core.Scalar;
+import org.bytedeco.javacpp.opencv_core.Size;
+import org.bytedeco.javacpp.opencv_ml.ANN_MLP;
+
+import org.bytedeco.javacpp.opencv_ml.TrainData;
+import org.easypr.core.CoreFunc.Direction;
+import org.easypr.util.Convert;
+import org.easypr.util.Util;
 
 /*
  * Created by fanwenjie
@@ -19,17 +31,17 @@ import static org.easypr.core.CoreFunc.projectedHistogram;
  */
 public class ANNTrain {
 
-    private CvANN_MLP ann = new CvANN_MLP();
+    private ANN_MLP ann = new ANN_MLP(null);
 
     // 中国车牌
-    private final char strCharacters[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+    private final char strCharacters[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
             'F', 'G', 'H', /* 没有I */
-            'J', 'K', 'L', 'M', 'N', /* 没有O */'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+            'J', 'K', 'L', 'M', 'N', /* 没有O */'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
     private final int numCharacter = 34; /* 没有I和0,10个数字与24个英文字符之和 */
 
     // 以下都是我训练时用到的中文字符数据，并不全面，有些省份没有训练数据所以没有字符
     // 有些后面加数字2的表示在训练时常看到字符的一种变形，也作为训练数据存储
-    private final String strChinese[] = {"zh_cuan" /* 川 */, "zh_e" /* 鄂 */, "zh_gan" /* 赣 */, "zh_hei" /* 黑 */,
+    private final String strChinese[] = { "zh_cuan" /* 川 */, "zh_e" /* 鄂 */, "zh_gan" /* 赣 */, "zh_hei" /* 黑 */,
             "zh_hu" /* 沪 */, "zh_ji" /* 冀 */, "zh_jl" /* 吉 */, "zh_jin" /* 津 */, "zh_jing" /* 京 */, "zh_shan" /* 陕 */,
             "zh_liao" /* 辽 */, "zh_lu" /* 鲁 */, "zh_min" /* 闽 */, "zh_ning" /* 宁 */, "zh_su" /* 苏 */, "zh_sx" /* 晋 */,
             "zh_wan" /* 皖 */, "zh_yu" /* 豫 */, "zh_yue" /* 粤 */, "zh_zhe" /* 浙 */};
@@ -37,16 +49,16 @@ public class ANNTrain {
     private final int numAll = 54; /* 34+20=54 */
 
     public Mat features(Mat in, int sizeData) {
-
+    	
         // Histogram features
-        System.out.println('x');
+    	System.out.println('x');
         float[] vhist = projectedHistogram(in, Direction.VERTICAL);
         float[] hhist = projectedHistogram(in, Direction.HORIZONTAL);
-
+          
         // Low data feature
         Mat lowData = new Mat();
         resize(in, lowData, new Size(sizeData, sizeData));
-
+      
         // Last 10 is the number of moments components
         int numCols = vhist.length + hhist.length + lowData.cols() * lowData.cols();
 
@@ -54,28 +66,27 @@ public class ANNTrain {
         // Asign values to feature,ANN的样本特征为水平、垂直直方图和低分辨率图像所组成的矢量
         int j = 0;
         for (int i = 0; i < vhist.length; i++, ++j) {
-            out.ptr(j).put(Convert.getBytes(vhist[i]));   //TODO: 这一句有错
+            out.ptr(j).put(Convert.getBytes(vhist[i]));
         }
-
-        /**
-         *
-         * Convert.getBytes 有错
-         * */
-
+        System.out.println("xxx1");
         for (int i = 0; i < hhist.length; i++, ++j) {
-            byte[] bytes = Convert.getBytes(hhist[i]);
-//            out.ptr(j).put(bytes);  //TODO: 这一句有错
-        }
+            out.ptr(j).put(Convert.getBytes(hhist[i]));
 
+        }
+        System.out.println("xxx2");
         for (int x = 0; x < lowData.cols(); x++) {
             for (int y = 0; y < lowData.rows(); y++, ++j) {
+                System.out.println("qsqq");
                 float val = lowData.ptr(x, y).get() & 0xFF;
+                System.out.println("qqq");
                 out.ptr(j).put(Convert.getBytes(val));
+                System.out.println("kkk");
             }
         }
+        System.out.println("xxx3");
         // if(DEBUG)
         // cout << out << "\n===========================================\n";
-
+        
         return out;
     }
 
@@ -85,27 +96,29 @@ public class ANNTrain {
         layers.ptr(0).put(Convert.getBytes(TrainData.cols()));
         layers.ptr(1).put(Convert.getBytes(nNeruns));
         layers.ptr(2).put(Convert.getBytes(numAll));
-        ann.create(layers, CvANN_MLP.SIGMOID_SYM, 1, 1);
-
+       // ann.create(layers, ANN_MLP.SIGMOID_SYM, 1, 1);
+        ann.setLayerSizes(layers);
+        ann.setTrainMethod(ANN_MLP.SIGMOID_SYM, 1, 1 );
         // Prepare trainClases
         // Create a mat with n trained data by m classes
         Mat trainClasses = new Mat();
         trainClasses.create(TrainData.rows(), numAll, CV_32FC1);
         for (int i = 0; i < trainClasses.rows(); i++) {
             for (int k = 0; k < trainClasses.cols(); k++) {
-
                 // If class of data i is same than a k class
                 if (k == Convert.toInt(classes.ptr(i)))
                     trainClasses.ptr(i, k).put(Convert.getBytes(1f));
-
                 else
                     trainClasses.ptr(i, k).put(Convert.getBytes(0f));
             }
         }
-
+        
         Mat weights = new Mat(1, TrainData.rows(), CV_32FC1, Scalar.all(1));
         // Learn classifier
-        ann.train(TrainData, trainClasses, weights);
+        TrainData t=new TrainData(TrainData);
+       // ann.train(TrainData, trainClasses, weights);
+        ann.train(t);
+
     }
 
     public int saveTrainData() {
@@ -115,7 +128,7 @@ public class ANNTrain {
         Mat trainingDataf10 = new Mat();
         Mat trainingDataf15 = new Mat();
         Mat trainingDataf20 = new Mat();
-        Mat img;
+        Mat img ;
         Vector<Integer> trainingLabels = new Vector<Integer>();
         String path = "res/train/data/chars_recognise_ann/chars2/chars2";
 
@@ -127,8 +140,8 @@ public class ANNTrain {
 
             int size = (int) files.size();
             for (int j = 0; j < size; j++) {
-
-                String filess = files.get(j).replaceAll("\\\\", "/");
+                
+                String filess=files.get(j).replaceAll("\\\\","/");
                 System.out.println(filess);
                 img = imread(files.get(j), 0);
                 System.out.println(1);
@@ -139,7 +152,7 @@ public class ANNTrain {
                 Mat f15 = features(img, 15);
                 System.out.println(4);
                 Mat f20 = features(img, 20);
-
+                
                 System.out.println(5);
                 trainingDataf5.push_back(f5);
                 trainingDataf10.push_back(f10);
@@ -147,22 +160,22 @@ public class ANNTrain {
                 trainingDataf20.push_back(f20);
                 System.out.println(6);
                 trainingLabels.add(i); // 每一幅字符图片所对应的字符类别索引下标
-
+                
             }
         }
 
         path = "res/train/data/chars_recognise_ann/charsChinese/charsChinese";
-
+           
         for (int i = 0; i < strChinese.length; i++) {
             System.out.println("Character: " + strChinese[i]);
             String str = path + '/' + strChinese[i];
             Vector<String> files = new Vector<String>();
             Util.getFiles(str, files);
-
+            
             int size = (int) files.size();
             for (int j = 0; j < size; j++) {
                 System.out.println(files.get(j));
-                img = imread(files.get(j), 0);
+                 img = imread(files.get(j), 0);
                 Mat f5 = features(img, 5);
                 Mat f10 = features(img, 10);
                 Mat f15 = features(img, 15);
@@ -223,14 +236,16 @@ public class ANNTrain {
         // model_name = str;
         // }
 
-        CvFileStorage fsto = CvFileStorage.open(model_name, CvMemStorage.create(), CV_STORAGE_WRITE);
-        ann.write(fsto, "ann");
-    }
+       CvFileStorage fsto = CvFileStorage.open(model_name, CvMemStorage.create(), CV_STORAGE_WRITE);
+     //   ann.write(fsto, "ann");
+       FileStorage fsto2=new FileStorage(fsto);
+           ann.write(fsto2);
+    } 
 
     public int annMain() {
         System.out.println("To be begin.");
 
-        saveTrainData();
+       saveTrainData();
 
         // 可根据需要训练不同的predictSize或者neurons的ANN模型
         // for (int i = 2; i <= 2; i ++)
